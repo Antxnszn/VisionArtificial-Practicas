@@ -74,8 +74,7 @@ switch opcion_distancia
             cov_matrix = cov(clases{i}'); % Matriz de covarianza
             cov_det = det(cov_matrix);
             cov_inv = inv(cov_matrix);
-            verosimilitud(i) = (1 / ((2 * pi) ^ (2/2) * sqrt(cov_det))) * ...
-                exp(-0.5 * (vector - centroides(:, i))' * cov_inv * (vector - centroides(:, i))); % Función de densidad Gaussiana
+            verosimilitud(i) = (1 / ((2 * pi) ^ (2/2) * sqrt(cov_det))) * exp(-0.5 * (vector - centroides(:, i))' * cov_inv * (vector - centroides(:, i))); % Función de densidad Gaussiana
         end
         
         probabilidades_posteriori = verosimilitud .* probabilidades_a_priori;
@@ -92,7 +91,7 @@ if opcion_distancia ~= 3
         fprintf('El vector desconocido pertenece a la clase %d\n', indice);
     end
 else
-    fprintf('El vector desconocido pertenece a la clase %d según el Teorema de Bayes\n', indice);
+    fprintf('El vector desconocido pertenece a la clase %d\n', indice);
 end
 
 continuarPuntos = upper(input('¿Deseas probar con otro vector? S/N\n', 's'));
