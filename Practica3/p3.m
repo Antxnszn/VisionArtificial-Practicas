@@ -55,7 +55,7 @@ for i = 1:n_clases
     centroides(:, i) = mean(clases{i}, 2); % Media por columnas para obtener el centroide
 end
 
-% CALCULAR LAS DISTANCIAS
+% CALCULAR LAS DISTANCIAS O PROBABILIDADES CON BAYES
 distancias = zeros(1, n_clases);
 switch opcion_distancia
     case 1 % Distancia Euclidiana
@@ -67,17 +67,32 @@ switch opcion_distancia
             cov_matrix = cov(clases{i}'); % Matriz de covarianza
             distancias(i) = sqrt((vector - centroides(:, i))' * inv(cov_matrix) * (vector - centroides(:, i))); % Distancia de Mahalanobis
         end
-    case 3 % Teorema de Bayes (dejado en blanco por ahora)
-        fprintf('Teorema de Bayes aún no implementado.\n');
-        distancias = inf(1, n_clases); % Valor infinito para no elegir ninguna clase
+    case 3 % Teorema de Bayes
+        probabilidades_a_priori = ones(1, n_clases) / n_clases; % Probabilidad a priori uniforme
+        verosimilitud = zeros(1, n_clases);
+        for i = 1:n_clases
+            cov_matrix = cov(clases{i}'); % Matriz de covarianza
+            cov_det = det(cov_matrix);
+            cov_inv = inv(cov_matrix);
+            verosimilitud(i) = (1 / ((2 * pi) ^ (2/2) * sqrt(cov_det))) * ...
+                exp(-0.5 * (vector - centroides(:, i))' * cov_inv * (vector - centroides(:, i))); % Función de densidad Gaussiana
+        end
+        
+        probabilidades_posteriori = verosimilitud .* probabilidades_a_priori;
+        probabilidades_posteriori = probabilidades_posteriori / sum(probabilidades_posteriori); % Normalización
+        [~, indice] = max(probabilidades_posteriori);
 end
 
-% DETERMINAR A QUÉ CLASE PERTENECE (CRITERIO DE NO PERTENENCIA)
-[minimo, indice] = min(distancias);
-if minimo > 1000 % Criterio de no pertenencia
-    fprintf('El vector desconocido NO pertenece a ninguna clase\n');
+% DETERMINAR A QUÉ CLASE PERTENECE
+if opcion_distancia ~= 3
+    [minimo, indice] = min(distancias);
+    if minimo > 1000 % Criterio de no pertenencia
+        fprintf('El vector desconocido NO pertenece a ninguna clase\n');
+    else
+        fprintf('El vector desconocido pertenece a la clase %d\n', indice);
+    end
 else
-    fprintf('El vector desconocido pertenece a la clase %d\n', indice);
+    fprintf('El vector desconocido pertenece a la clase %d según el Teorema de Bayes\n', indice);
 end
 
 continuarPuntos = upper(input('¿Deseas probar con otro vector? S/N\n', 's'));
